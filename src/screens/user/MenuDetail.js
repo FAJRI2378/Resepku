@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+} from "react-native";
 import { WebView } from "react-native-webview";
-import { Video } from 'expo-av';  // menggunakan expo-av untuk video
+import { Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
-import { AuthContext } from "../../context/AuthContext"; 
-import { useNavigation } from '@react-navigation/native'; 
+import { AuthContext } from "../../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 import {
   API_ADD_FAVORITE_URL,
   API_REMOVE_FAVORITE_URL,
@@ -18,8 +26,8 @@ const convertYoutubeUrlToEmbed = (url) => {
 };
 
 const MenuDetail = ({ route }) => {
-  const { userInfo } = useContext(AuthContext); // Menggunakan userInfo dari AuthContext
-  const userId = userInfo?.id;  // Mendapatkan userId dari userInfo
+  const { userInfo } = useContext(AuthContext);
+  const userId = userInfo?.id;
   const navigation = useNavigation();
 
   const {
@@ -33,60 +41,60 @@ const MenuDetail = ({ route }) => {
   const isYoutubeLink = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Cek jika userInfo atau userId tidak tersedia
   useEffect(() => {
     if (!userId || !menuId) {
-      console.log("UserInfo atau UserId tidak tersedia.");
+      console.log("UserInfo atau MenuId tidak tersedia.");
       return;
     }
 
-    // Jika userInfo sudah ada, lakukan fetch untuk favorit
-    console.log("UserInfo:", userInfo);
-    console.log("MenuId:", menuId);
-    fetch(API_GET_FAVORITES_URL(userId))
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchFavorites = async () => {
+      try {
+        const res = await fetch(API_GET_FAVORITES_URL(userId));
+        const data = await res.json();
         const found = data.find((m) => m._id === menuId);
         setIsFavorite(!!found);
-      })
-      .catch((err) => console.error("Fetch favorites error:", err));
+      } catch (err) {
+        console.error("Fetch favorites error:", err);
+      }
+    };
+
+    fetchFavorites();
   }, [userId, menuId]);
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     if (!userId || !menuId) {
       Alert.alert("Error", "User atau menu tidak valid");
-      return; // Jangan lanjut jika userId atau menuId tidak ditemukan
+      return;
     }
-    const method = "POST"; // selalu POST
-    const url = isFavorite
-      ? `${API_REMOVE_FAVORITE_URL}/remove`
-      : API_ADD_FAVORITE_URL;
-    
 
-      fetch(url, {
-        method,
+    const url = isFavorite ? API_REMOVE_FAVORITE_URL : API_ADD_FAVORITE_URL;
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, menuId }),
-      })
-      
-      .then((res) => {
-        if (!res.ok) throw new Error("Request gagal");
-        return res.json();
-      })
-      .then(() => setIsFavorite(!isFavorite))
-      .catch((err) => {
-        console.error("Toggle favorite error:", err);
-        Alert.alert("Error", "Gagal mengupdate favorit");
       });
+
+      if (!res.ok) {
+        throw new Error(`Request gagal dengan status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setIsFavorite(!isFavorite);
+      console.log("Response data:", data);
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+      Alert.alert("Error", "Gagal mengupdate favorit");
+    }
   };
 
   const goToFavorites = () => {
-    navigation.navigate("FavoriteMenu"); 
+    navigation.navigate("FavoriteMenu");
   };
 
-  // Menunggu userInfo tersedia
   if (!userInfo) {
-    return <Text>Loading...</Text>; // Menunggu data userInfo tersedia
+    return <Text>Loading...</Text>;
   }
 
   return (
@@ -145,16 +153,58 @@ const MenuDetail = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 15, paddingTop:50, backgroundColor: "#FFF" },
-  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
-  title: { fontSize: 22, fontWeight: "bold", color: "#222", flex: 1 },
-  iconButton: { marginLeft: 10 },
-  image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 10 },
-  description: { fontSize: 16, marginBottom: 15, color: "#555" },
-  placeholder: { fontSize: 14, fontStyle: "italic", color: "#999", marginBottom: 10 },
-  videoContainer: { height: 200, width: "100%", borderRadius: 10, overflow: "hidden", marginBottom: 20 },
-  webview: { flex: 1 },
-  video: { width: "100%", height: 200, borderRadius: 10, paddingBottom:10  },
+  container: {
+    padding: 15,
+    paddingTop: 50,
+    backgroundColor: "#FFF",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#222",
+    flex: 1,
+  },
+  iconButton: {
+    marginLeft: 10,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: "#555",
+  },
+  placeholder: {
+    fontSize: 14,
+    fontStyle: "italic",
+    color: "#999",
+    marginBottom: 10,
+  },
+  videoContainer: {
+    height: 200,
+    width: "100%",
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+  webview: {
+    flex: 1,
+  },
+  video: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+  },
   goToFavoritesButton: {
     marginTop: 15,
     paddingVertical: 10,

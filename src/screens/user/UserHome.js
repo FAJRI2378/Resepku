@@ -122,7 +122,7 @@ const UserHome = ({ navigation }) => {
         {/* Header */}
         <View style={styles.headerContainer}>
           <Image
-            source={require("../../../assets/nasi_goreng.jpg")}
+            source={require("../../../assets/rasania.png")}
             style={styles.headerImage}
           />
           <TouchableOpacity style={styles.logoutButton} onPress={logout}>
@@ -170,21 +170,36 @@ const UserHome = ({ navigation }) => {
 
         {/* Categories */}
         <View style={styles.categoryContainer}>
-          {["Sarapan", "Utama", "Dessert", "Snacks"].map((category, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && { backgroundColor: "#7AC74F" },
-              ]}
-              onPress={() =>
-                setSelectedCategory(selectedCategory === category ? null : category)
-              }
-            >
-              <Text style={styles.categoryText}>{category}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+  {["Sarapan", "Utama", "Dessert", "Snacks"].map((category, index) => {
+    const iconMap = {
+      Sarapan: "cafe-outline",
+      Utama: "restaurant-outline",
+      Dessert: "ice-cream-outline",
+      Snacks: "fast-food-outline",
+    };
+    return (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.categoryButton,
+          selectedCategory === category && { backgroundColor: "#7AC74F" },
+        ]}
+        onPress={() =>
+          setSelectedCategory(selectedCategory === category ? null : category)
+        }
+      >
+        <Ionicons
+          name={iconMap[category]}
+          size={18}
+          color="#333"
+          style={{ marginRight: 5 }}
+        />
+        <Text style={styles.categoryText}>{category}</Text>
+      </TouchableOpacity>
+    );
+  })}
+</View>
+
 
         {/* Menu Terbaru / Filtered */}
         <View style={styles.menuHeaderRow}>

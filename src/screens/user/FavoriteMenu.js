@@ -21,7 +21,10 @@ const FavoriteMenu = ({ navigation }) => {
     console.log("Fetching favorites for userId:", userId); // Log userId yang digunakan untuk API
     setLoading(true);
     fetch(API_GET_FAVORITES_URL(userId))
-      .then((res) => res.json())
+      .then((res) => {
+        console.log("Response status:", res.status); // Log status code response
+        return res.json();
+      })
       .then((data) => {
         console.log("Fetched favorites data:", data); // Log data yang diterima
         if (Array.isArray(data)) {
@@ -37,7 +40,6 @@ const FavoriteMenu = ({ navigation }) => {
       .finally(() => setLoading(false));
   }, [userId]); // Dependensi hanya userId, jadi hanya fetch ketika userId berubah
 
-  // Menangani loading dan error
   if (!userInfo) {
     return (
       <View style={styles.center}>
@@ -71,7 +73,6 @@ const FavoriteMenu = ({ navigation }) => {
     );
   }
 
-  // Render setiap item favorit
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <Image source={{ uri: item.imageUrl }} style={styles.image} /> {/* Ganti imageUrl dengan field yang sesuai */}
@@ -88,22 +89,24 @@ const FavoriteMenu = ({ navigation }) => {
     </View>
   );
 
-  // Menghapus favorit
   const handleRemoveFavorite = (menuId) => {
-    // Panggil API untuk menghapus favorit
-    console.log("Removing favorite for menuId:", menuId);
+    console.log("Removing favorite for menuId:", menuId); // Log menuId yang akan dihapus
     fetch(API_GET_FAVORITES_URL(userId), { // Ganti dengan URL API yang sesuai untuk menghapus favorit
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, menuId })
     })
-      .then((res) => res.json())
+      .then((res) => {
+        console.log("Delete response status:", res.status); // Log status code respons
+        return res.json();
+      })
       .then((data) => {
         console.log("Removed favorite:", data);
         setFavorites(favorites.filter((item) => item._id !== menuId)); // Menghapus item dari state
       })
       .catch((err) => {
         console.error("Error removing favorite:", err);
+        setError("Gagal menghapus favorit.");
       });
   };
 

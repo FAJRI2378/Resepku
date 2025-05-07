@@ -1,23 +1,82 @@
 import React from 'react';
-import { ScrollView, Text, StyleSheet } from 'react-native';
+import { ScrollView, Text, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const MudahScreen = () => {
+  const navigation = useNavigation();
+
+  const items = [
+    { emoji: '🍳', text: 'Telur orak-arik atau omelet' },
+    { emoji: '🍜', text: 'Indomie + topping sehat' },
+    { emoji: '🍚', text: 'Nasi goreng sederhana' },
+    { emoji: '🥪', text: 'Roti lapis (sandwich)' },
+    { emoji: '🍌', text: 'Pisang bakar / pisang keju' },
+  ];
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>🍳 Rekomendasi Makanan yang Mudah Dibuat</Text>
-      <Text style={styles.text}>• Telur orak-arik atau omelet</Text>
-      <Text style={styles.text}>• Indomie + topping sehat</Text>
-      <Text style={styles.text}>• Nasi goreng sederhana</Text>
-      <Text style={styles.text}>• Roti lapis (sandwich)</Text>
-      <Text style={styles.text}>• Pisang bakar / pisang keju</Text>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="#2c3e50" />
+        <Text style={styles.backText}>Kembali</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Makanan Praktis & Lezat</Text>
+      <Text style={styles.subtitle}>Cepat disiapkan dan tetap nikmat! ⏱️</Text>
+
+      {items.map((item, index) => (
+        <View key={index} style={styles.card}>
+          <Text style={styles.cardText}>
+            {item.emoji}  {item.text}
+          </Text>
+        </View>
+      ))}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 15 },
-  text: { fontSize: 16, marginBottom: 10 },
+  container: {
+    padding: 20,
+    backgroundColor: "#8fbc8f",
+    flex: 1,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  backText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#2c3e50',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#2c3e50',
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 20,
+    color: '#7f8c8d',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardText: {
+    fontSize: 16,
+    color: '#34495e',
+  },
 });
 
 export default MudahScreen;
