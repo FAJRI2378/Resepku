@@ -86,15 +86,14 @@ const FavoriteMenu = ({ navigation }) => {
           <TouchableOpacity
             style={styles.detailButton}
             onPress={() =>
-  navigation.navigate('MenuDetail', {
-    menuId: item._id,
-    nama: item.name,
-    deskripsi: item.description,
-    image: item.image,
-    videoUrl: item.videoUrl,
-  })
-}
-
+              navigation.navigate('MenuDetail', {
+                menuId: item._id,
+                nama: item.name,
+                deskripsi: item.description,
+                image: item.image,
+                videoUrl: item.videoUrl,
+              })
+            }
           >
             <Text style={styles.detailButtonText}>Detail ⟳</Text>
           </TouchableOpacity>
@@ -142,6 +141,11 @@ const FavoriteMenu = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Navbar */}
+      <View style={styles.navbar}>
+        <Text style={styles.navbarTitle}>Menu Favorit</Text>
+      </View>
+
       <FlatList
         data={favorites}
         keyExtractor={(item, index) => item._id?.toString() || index.toString()}
@@ -160,6 +164,17 @@ const FavoriteMenu = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#8fbc8f' },
+  navbar: {
+    backgroundColor: '#4CAF50',  // Green background for navbar
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navbarTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: 'gray', fontSize: 16 },
   card: {

@@ -1,6 +1,4 @@
-import { API_BASE_URL } from '../../config/config';
 import React, { useState, useCallback, useContext } from "react";
-import { API_MENU_URL } from "../../config/config";
 import {
   View,
   Text,
@@ -10,18 +8,29 @@ import {
   Alert,
   Image,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { API_MENU_URL } from "../../config/config";
 import { AuthContext } from "../../context/AuthContext";
 
 const AdminDashboard = ({ navigation }) => {
   const [menus, setMenus] = useState([]);
-  const { logout } = useContext(AuthContext);
+  const { logout, setUserInfo } = useContext(AuthContext);
 
   const fetchMenus = async () => {
     try {
-      const response = await fetch(API_MENU_URL); // ✅ sekarang /api/menu
+      const response = await fetch(API_MENU_URL, {
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true", // opsional, kalau pakai ngrok
+        },
+      });
       const data = await response.json();
-      setMenus(data);
+      if (data?.menus && Array.isArray(data.menus)) {
+        setMenus(data.menus);
+      } else {
+        console.error("Respons tidak sesuai format:", data);
+      }
     } catch (error) {
       console.error("Gagal mengambil data menu:", error);
     }
@@ -34,13 +43,12 @@ const AdminDashboard = ({ navigation }) => {
         method: "DELETE",
       });
       Alert.alert("Berhasil", "Menu berhasil dihapus");
-      fetchMenus(); // Refresh list setelah hapus
+      fetchMenus();
     } catch (error) {
       console.error("Gagal menghapus menu:", error);
       Alert.alert("Error", "Gagal menghapus menu");
     }
   };
-  
 
   useFocusEffect(
     useCallback(() => {
@@ -51,7 +59,7 @@ const AdminDashboard = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={styles.row}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+        <Image source={{ uri: item.image }} style={styles.image} />
         <View style={styles.textContainer}>
           <Text style={styles.itemText}>{item.nama}</Text>
           <Text style={styles.itemPrice}>Rp {item.harga}</Text>
@@ -82,7 +90,7 @@ const AdminDashboard = ({ navigation }) => {
       </View>
     </View>
   );
-  
+
   const handleLogout = () => {
     Alert.alert("Logout", "Yakin ingin keluar?", [
       { text: "Batal", style: "cancel" },
@@ -90,25 +98,22 @@ const AdminDashboard = ({ navigation }) => {
         text: "Keluar",
         style: "destructive",
         onPress: async () => {
-          // Hapus semua data terkait pengguna (jika ada)
-          await AsyncStorage.removeItem('userToken');
-          setUserInfo(null); // Reset userInfo di state
-          // Logout dan arahkan pengguna ke halaman login
+          await AsyncStorage.removeItem("userToken");
+          setUserInfo(null);
           logout();
           navigation.replace("Login");
         },
       },
     ]);
   };
-  
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>Admin Dashboard</Text>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Text style={styles.logoutText}>Log out</Text>
+                  </TouchableOpacity>
       </View>
 
       <TouchableOpacity
@@ -129,22 +134,35 @@ const AdminDashboard = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "rgb(57, 161, 57) " },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "rgb(57, 161, 57)",
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
   },
-  title: { fontSize: 24, fontWeight: "bold" },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+  },
   logoutBtn: {
     backgroundColor: "rgb(30, 114, 24)",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 12,  // Increased padding
+    paddingHorizontal: 24, // Increased padding
     borderRadius: 5,
+    paddingBottom: 15,    // Increased padding bottom for more space
   },
-  logoutText: { color: "#000000", fontWeight: "bold" },
-
+  logoutText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,         // Increased font size for better visibility
+  }
+  ,
   addButton: {
     backgroundColor: "#fff",
     padding: 12,
@@ -152,21 +170,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 15,
   },
-
-  addButtonText: { fontSize: 16, fontWeight: "bold" },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   itemContainer: {
     padding: 15,
     backgroundColor: "#f2f2f2",
     borderRadius: 5,
     marginBottom: 10,
   },
-
   row: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
   },
-  
   image: {
     width: 80,
     height: 80,
@@ -177,8 +195,14 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
-  itemText: { fontSize: 18, fontWeight: "bold" },
-  itemPrice: { fontSize: 16, color: "#666" },
+  itemText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  itemPrice: {
+    fontSize: 16,
+    color: "#666",
+  },
   actions: {
     flexDirection: "row",
     justifyContent: "space-between",

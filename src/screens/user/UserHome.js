@@ -15,7 +15,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 
 const UserHome = ({ navigation }) => {
-  const { userInfo, logout } = useContext(AuthContext);
+  const { userInfo, handleLogout } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
   const [menuList, setMenuList] = useState([]);
@@ -128,7 +128,7 @@ const UserHome = ({ navigation }) => {
             source={require("../../../assets/rasania.png")}
             style={styles.headerImage}
           />
-          <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Log out</Text>
           </TouchableOpacity>
         </View>
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     position: "absolute",
-    top: 10,
+    top: 100,
     right: 10,
     backgroundColor: "#7AC74F",
     padding: 8,
