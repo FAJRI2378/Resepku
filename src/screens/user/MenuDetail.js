@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { Video } from 'expo-av'; // menggunakan expo-av untuk video
+import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -28,8 +28,8 @@ const convertYoutubeUrlToEmbed = (url) => {
 };
 
 const MenuDetail = ({ route }) => {
-  const { userInfo } = useContext(AuthContext); // Menggunakan userInfo dari AuthContext
-  const userId = userInfo?.id; // Mendapatkan userId dari userInfo
+  const { userInfo } = useContext(AuthContext);
+  const userId = userInfo?.id;
   const navigation = useNavigation();
 
   const {
@@ -42,6 +42,7 @@ const MenuDetail = ({ route }) => {
 
   const isYoutubeLink =
     videoUrl?.includes('youtube.com') || videoUrl?.includes('youtu.be');
+
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
@@ -50,9 +51,9 @@ const MenuDetail = ({ route }) => {
       return;
     }
 
-    // Jika userInfo sudah ada, lakukan fetch untuk favorit
     console.log('UserInfo:', userInfo);
     console.log('MenuId:', menuId);
+
     fetch(API_GET_FAVORITES_URL(userId))
       .then((res) => res.json())
       .then((data) => {
@@ -62,41 +63,48 @@ const MenuDetail = ({ route }) => {
       .catch((err) => console.error('Fetch favorites error:', err));
   }, [userId, menuId]);
 
-  const toggleFavorite = async () => {
-    if (!userId || !menuId) {
-      Alert.alert('Error', 'User atau menu tidak valid');
-      return;
-    }
-
-    const url = API_REMOVE_FAVORITE_URL;
-    const method = isFavorite ? 'DELETE' : 'POST';
-
-    fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, menuId }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Request gagal');
-        return res.json();
-      })
-      .then(() => setIsFavorite(!isFavorite))
-      .catch((err) => {
-        console.error('Toggle favorite error:', err);
-        Alert.alert('Error', 'Gagal mengupdate favorit');
-      });
-  };
-
-  const goToFavorites = () => {
-    navigation.navigate('FavoriteMenu');
-  };
-
-  if (!userInfo) {
-    return <Text>Loading...</Text>;
+  const toggleFavorite = () => {
+  if (!userId || !menuId) {
+    Alert.alert("Error", "User atau menu tidak valid");
+    return;
   }
 
+  const url = isFavorite ? API_REMOVE_FAVORITE_URL : API_ADD_FAVORITE_URL;
+  const method = isFavorite ? 'DELETE' : 'POST';
+
+  fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, menuId }),
+  })
+    .then((res) => {
+      // If response is not ok (not 2xx range), throw error
+      if (!res.ok) {
+        return res.text().then((text) => {
+          throw new Error(text || 'Request failed');
+        });
+      }
+      return res.json(); // Otherwise, parse as JSON
+    })
+    .then((data) => {
+      console.log('Favorite updated:', data);
+      // Toggle the favorite status
+      setIsFavorite(!isFavorite);
+    })
+    .catch((err) => {
+      console.error('Toggle favorite error:', err);
+      Alert.alert('Error', 'Gagal mengupdate favorit: ' + err.message);
+    });
+};
+  
+  
+
+  const goToFavorites = () => {
+    navigation.navigate("FavoriteMenu"); 
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{nama}</Text>
         <TouchableOpacity onPress={toggleFavorite} style={styles.iconButton}>
@@ -108,12 +116,7 @@ const MenuDetail = ({ route }) => {
         </TouchableOpacity>
       </View>
 
-      {image ? (
-        <Image source={{ uri: image }} style={styles.image} />
-      ) : (
-        <Text style={styles.placeholder}>Gambar tidak tersedia</Text>
-      )}
-
+      {image && <Image source={{ uri: image }} style={styles.image} />}
       <Text style={styles.description}>{deskripsi}</Text>
 
       {videoUrl ? (
@@ -122,9 +125,6 @@ const MenuDetail = ({ route }) => {
             <WebView
               source={{ uri: convertYoutubeUrlToEmbed(videoUrl) }}
               style={styles.webview}
-              javaScriptEnabled
-              domStorageEnabled
-              allowsFullscreenVideo
             />
           </View>
         ) : (
@@ -153,17 +153,35 @@ const MenuDetail = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 15, paddingTop: 50, backgroundColor: '#FFF' },
+  container: {
+    padding: 15,
+    paddingTop: 50,
+    backgroundColor: '#8fbc8f',
+  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#222', flex: 1 },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#222',
+    flex: 1,
+  },
   iconButton: { marginLeft: 10 },
-  image: { width: '100%', height: 200, borderRadius: 10, marginBottom: 10 },
-  description: { fontSize: 16, marginBottom: 15, color: '#555' },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: '#555',
+  },
   placeholder: {
     fontSize: 14,
     fontStyle: 'italic',
@@ -178,7 +196,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   webview: { flex: 1 },
-  video: { width: '100%', height: 200, borderRadius: 10, paddingBottom: 10 },
+  video: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    paddingBottom: 10,
+  },
   goToFavoritesButton: {
     marginTop: 15,
     paddingVertical: 10,
@@ -194,4 +217,3 @@ const styles = StyleSheet.create({
 });
 
 export default MenuDetail;
-  

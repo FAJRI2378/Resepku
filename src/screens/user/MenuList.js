@@ -29,12 +29,12 @@ const MenuList = () => {
       try {
         const response = await fetch(API_MENU_URL);
         const data = await response.json();
-
-        if (response.ok) {
-          setMenus(data || []);
-          setFilteredMenus(data || []);
+    
+        if (response.ok && Array.isArray(data.menus)) {
+          setMenus(data.menus);
+          setFilteredMenus(data.menus);
         } else {
-          alert("Failed to load menu");
+          alert("Data menu tidak valid!");
         }
       } catch (error) {
         alert("Error while loading the menu");
@@ -42,6 +42,7 @@ const MenuList = () => {
         setLoading(false);
       }
     };
+    
 
     fetchMenuList();
   }, []);

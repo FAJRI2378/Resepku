@@ -39,16 +39,21 @@ const UserHome = ({ navigation }) => {
             "ngrok-skip-browser-warning": "true",
           },
         });
-
+    
         const data = await response.json();
-        console.log("📦 Data menu dari backend:", data.map(item => ({
-          nama: item.nama,
-          kategori: item.kategori,
-        })));
-
-        setMenuList(data);
-        const terbaru = data.slice(-3).reverse();
-        setMenuTerbaru(terbaru);
+    
+        // Log respons API untuk memeriksa data
+        console.log("📦 Respons dari API:", data);
+    
+        if (data?.menus && Array.isArray(data.menus)) {
+          // Menyimpan data menu jika formatnya sesuai
+          setMenuList(data.menus);
+          const terbaru = data.menus.slice(-3).reverse();
+          setMenuTerbaru(terbaru);
+        } else {
+          console.error("Data tidak valid, menus tidak ditemukan:", data);
+          setError("Data menu tidak valid");
+        }
       } catch (error) {
         console.error("❌ Gagal mengambil data menu:", error);
         setError("Gagal mengambil data menu");
@@ -56,6 +61,7 @@ const UserHome = ({ navigation }) => {
         setLoading(false);
       }
     };
+    
 
     fetchMenus();
   }, []);
@@ -166,36 +172,35 @@ const UserHome = ({ navigation }) => {
 
         {/* Categories */}
         <View style={styles.categoryContainer}>
-  {["Sarapan", "Utama", "Dessert", "Snacks"].map((category, index) => {
-    const iconMap = {
-      Sarapan: "cafe-outline",
-      Utama: "restaurant-outline",
-      Dessert: "ice-cream-outline",
-      Snacks: "fast-food-outline",
-    };
-    return (
-      <TouchableOpacity
-        key={index}
-        style={[
-          styles.categoryButton,
-          selectedCategory === category && { backgroundColor: "#7AC74F" },
-        ]}
-        onPress={() =>
-          setSelectedCategory(selectedCategory === category ? null : category)
-        }
-      >
-        <Ionicons
-          name={iconMap[category]}
-          size={18}
-          color="#333"
-          style={{ marginRight: 5 }}
-        />
-        <Text style={styles.categoryText}>{category}</Text>
-      </TouchableOpacity>
-    );
-  })}
-</View>
-
+          {["Sarapan", "Utama", "Dessert", "Snacks"].map((category, index) => {
+            const iconMap = {
+              Sarapan: "cafe-outline",
+              Utama: "restaurant-outline",
+              Dessert: "ice-cream-outline",
+              Snacks: "fast-food-outline",
+            };
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category && { backgroundColor: "#7AC74F" },
+                ]}
+                onPress={() =>
+                  setSelectedCategory(selectedCategory === category ? null : category)
+                }
+              >
+                <Ionicons
+                  name={iconMap[category]}
+                  size={18}
+                  color="#333"
+                  style={{ marginRight: 5 }}
+                />
+                <Text style={styles.categoryText}>{category}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* Menu Terbaru / Filtered */}
         <View style={styles.menuHeaderRow}>
@@ -377,10 +382,9 @@ const styles = StyleSheet.create({
   },
   menuTitle: {
     marginTop: 5,
-    fontWeight: "bold",
-    textAlign: "center",
+     fontWeight: "bold",
     color: "#333",
-  },
-});
-
-export default UserHome;
+    },
+    });
+    
+    export default UserHome;

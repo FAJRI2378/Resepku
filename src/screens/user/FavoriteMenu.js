@@ -9,12 +9,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
-import { API_GET_FAVORITES_URL } from '../../config/config'; // Pastikan API URL benar
-import { API_REMOVE_FAVORITE_URL } from '../../config/config';
+import {
+  API_GET_FAVORITES_URL,
+  API_REMOVE_FAVORITE_URL,
+} from '../../config/config';
 
 const FavoriteMenu = ({ navigation }) => {
-  const { userInfo } = useContext(AuthContext); // Akses userInfo
-  const userId = userInfo?.id; // Akses _id dari userInfo
+  const { userInfo } = useContext(AuthContext);
+  const userId = userInfo?.id;
 
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,15 +29,10 @@ const FavoriteMenu = ({ navigation }) => {
       return;
     }
 
-    console.log('Fetching favorites for userId:', userId); // Log userId yang digunakan untuk API
     setLoading(true);
     fetch(API_GET_FAVORITES_URL(userId))
-      .then((res) => {
-        console.log("Response status:", res.status); // Log status code response
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
-        console.log('Fetched favorites data:', data); // Log data yang diterima
         if (Array.isArray(data)) {
           setFavorites(data);
         } else {
@@ -47,12 +44,75 @@ const FavoriteMenu = ({ navigation }) => {
         setError('Gagal memuat data favorit.');
       })
       .finally(() => setLoading(false));
-  }, [userId]); // Dependensi hanya userId, jadi hanya fetch ketika userId berubah
+  }, [userId]);
+
+  const handleRemoveFavorite = (menuId) => {
+    fetch(API_REMOVE_FAVORITE_URL, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, menuId }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        // Reload favorites
+        fetch(API_GET_FAVORITES_URL(userId))
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data)) {
+              setFavorites(data);
+            } else {
+              setError('Data favorit tidak valid.');
+            }
+          })
+          .catch((err) => {
+            console.error('Error fetching updated favorites:', err);
+            setError('Gagal memuat data favorit.');
+          });
+      })
+      .catch((err) => {
+        console.error('Error removing favorite:', err);
+      });
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.heartIconContainer}>
+        <Text style={styles.heartIcon}>❤️</Text>
+      </View>
+      <View style={styles.menuInfo}>
+        <Image source={{ uri: item.image }} style={styles.image} />
+        <View style={styles.textContainer}>
+          <Text style={styles.itemTitle}>{item.name}</Text>
+          <TouchableOpacity
+            style={styles.detailButton}
+            onPress={() =>
+  navigation.navigate('MenuDetail', {
+    menuId: item._id,
+    nama: item.name,
+    deskripsi: item.description,
+    image: item.image,
+    videoUrl: item.videoUrl,
+  })
+}
+
+          >
+            <Text style={styles.detailButtonText}>Detail ⟳</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => handleRemoveFavorite(item._id)}
+      >
+        <Text style={styles.deleteButtonText}>Hapus 🗑</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   if (!userInfo) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size='large' />
+        <ActivityIndicator size="large" />
         <Text>Loading user data...</Text>
       </View>
     );
@@ -61,69 +121,24 @@ const FavoriteMenu = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size='large' />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (!favorites.length) {
+  if (favorites.length === 0) {
     return (
       <View style={styles.center}>
         <Text style={styles.emptyText}>Belum ada menu favorit.</Text>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate('UserHome')}>
+          onPress={() => navigation.navigate('UserHome')}
+        >
           <Text style={styles.backButtonText}>Kembali ke Menu Awal</Text>
         </TouchableOpacity>
       </View>
     );
   }
-
-  const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <Text style={styles.itemTitle}>{item.nama}</Text>
-
-      <View style={styles.itemContent}>
-        <Text style={styles.itemTitle}>{item.name}</Text>
-        <Text>{item.description}</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => handleRemoveFavorite(item._id)}>
-        <Text style={styles.removeButtonText}>Hapus Favorit</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const handleRemoveFavorite = (menuId) => {
-    console.log("Removing favorite for menuId:", menuId); // Log menuId yang akan dihapus
-    fetch(API_REMOVE_FAVORITE_URL, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, menuId }),
-    })
-      .then((res) => {
-        console.log("Delete response status:", res.status); // Log status code respons
-        return res.json();
-      })
-      .then((data) => {
-        console.log('Removed favorite:', data);
-        setFavorites(favorites.filter((item) => item._id !== menuId)); // Menghapus item dari state
-      })
-      .catch((err) => {
-        console.error('Error removing favorite:', err);
-        setError('Gagal menghapus favorit.');
-      });
-  };
 
   return (
     <View style={styles.container}>
@@ -135,41 +150,92 @@ const FavoriteMenu = ({ navigation }) => {
       />
       <TouchableOpacity
         style={styles.backBtn}
-        onPress={() => navigation.navigate('UserHome')}>
-        <Text style={styles.backBtnText}>Kembali ke Menu Awal</Text>
+        onPress={() => navigation.navigate('UserHome')}
+      >
+        <Text style={styles.backBtnText}>⬅</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#8fbc8f' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  errorText: { color: 'red', fontSize: 16 },
   emptyText: { color: 'gray', fontSize: 16 },
-  itemContainer: {
-    flexDirection: 'row',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    alignItems: 'center',
-  },
-  image: { width: 50, height: 50, borderRadius: 25 },
-  itemContent: { flex: 1, marginLeft: 10 },
-  itemTitle: { fontSize: 18, fontWeight: 'bold' },
-  removeButton: { backgroundColor: '#f00', padding: 8, borderRadius: 5 },
-  removeButtonText: { color: '#fff' },
-  backBtn: {
-    backgroundColor: '#007f00',
+  card: {
+    backgroundColor: '#A8F0A5',
+    borderRadius: 20,
     padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    margin: 16,
+    marginVertical: 10,
+    marginHorizontal: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  backBtnText: {
+  heartIconContainer: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    zIndex: 1,
+  },
+  heartIcon: {
+    fontSize: 24,
+  },
+  menuInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    marginRight: 10,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 6,
+  },
+  detailButton: {
+    backgroundColor: '#DFFFD6',
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    alignSelf: 'flex-start',
+  },
+  detailButtonText: {
+    color: '#008000',
+    fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: '#F08080',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    alignSelf: 'flex-start',
+    marginTop: 10,
+  },
+  deleteButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+  },
+  backBtn: {
+    backgroundColor: '#A8F0A5',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  backBtnText: {
+    fontSize: 24,
   },
   backButton: {
     marginTop: 20,

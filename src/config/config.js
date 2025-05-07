@@ -1,5 +1,5 @@
 // ✅ URL utama
-export const API_BASE_URL = "https://580a-2400-9800-f3-a67a-180b-5eb0-fab6-7ee7.ngrok-free.app";
+export const API_BASE_URL = "https://3164-2001-448a-2071-6a31-3dd7-3c35-dc77-ee3b.ngrok-free.app";
 export const API_URL = `${API_BASE_URL}/api`;
 
 export const API_LOGIN_URL = `${API_URL}/auth/login`;
@@ -9,9 +9,9 @@ export const API_RESET_PASSWORD_URL = `${API_URL}/auth/reset-password`;
 export const API_MENU_URL = `${API_URL}/menu`;
 
 export const API_FAVORITES_URL = `${API_URL}/favorite`; // 🔁 ganti dari "favorites" ke "favorite"
-export const API_ADD_FAVORITE_URL = API_FAVORITES_URL;
+export const API_ADD_FAVORITE_URL = `${API_BASE_URL}/api/favorite`;
 // URL untuk menghapus favorit
-export const API_REMOVE_FAVORITE_URL = `${API_FAVORITES_URL}/remove`;
+export const API_REMOVE_FAVORITE_URL = `${API_BASE_URL}/api/favorite`;
 export const API_GET_FAVORITES_URL = (userId) => `${API_FAVORITES_URL}/user/${userId}`;
 
 // ✅ Debug log
