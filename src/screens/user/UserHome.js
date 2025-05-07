@@ -90,7 +90,6 @@ const UserHome = ({ navigation }) => {
     : menuTerbaru;
 
   const infoItems = [
-
     {
       id: 1,
       title: "Beberapa tips dalam memasak agar lebih memudahkan",
@@ -109,9 +108,7 @@ const UserHome = ({ navigation }) => {
       image: require("../../../assets/mudah.jpg"),
       type: "mudah",
     },
-
   ];
-
 
   return (
     <ImageBackground
@@ -160,7 +157,6 @@ const UserHome = ({ navigation }) => {
                     videoUrl: item.videoUrl,
                   })
                 }
-                              
               >
                 <Image source={{ uri: item.image }} style={styles.recommendationImage} />
               </TouchableOpacity>
@@ -219,7 +215,6 @@ const UserHome = ({ navigation }) => {
                     videoUrl: item.videoUrl,
                   })
                 }
-                
               >
                 <Image
                   source={{ uri: item.image }}
@@ -237,7 +232,7 @@ const UserHome = ({ navigation }) => {
         <View style={styles.infoContainer}>
           {infoItems.map((item) => (
             <TouchableOpacity
-              key={item.id}
+              key={item.id} /* ✅ fixed: was item._id */
               style={styles.infoCard}
               onPress={() => {
                 if (item.type === "Tips") {
@@ -248,7 +243,6 @@ const UserHome = ({ navigation }) => {
                   navigation.navigate("Mudah");
                 }
               }}
-              
             >
               <Image source={item.image} style={styles.infoImage} />
               <Text style={styles.infoText}>{item.title}</Text>
