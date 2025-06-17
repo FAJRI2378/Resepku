@@ -18,6 +18,7 @@ import DietScreen from '../screens/info/DietScreen';
 import MudahScreen from '../screens/info/MudahScreen';
 import InfoScreen from '../screens/user/InfoScreen';
 import FavoriteMenu from "../screens/user/FavoriteMenu";
+[]
 
 const Stack = createStackNavigator();
 
@@ -49,6 +50,7 @@ const AppNavigator = () => {
             <Stack.Screen name="Mudah" component={MudahScreen} />
             <Stack.Screen name="Info" component={InfoScreen} />
             <Stack.Screen name="FavoriteMenu" component={FavoriteMenu} />
+            
           </>
         )
       ) : null}

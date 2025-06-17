@@ -1,10 +1,12 @@
 // ✅ URL utama
-export const API_BASE_URL = "https://3164-2001-448a-2071-6a31-3dd7-3c35-dc77-ee3b.ngrok-free.app";
+export const API_BASE_URL = "https://754a-2400-9800-f3-39d8-e4ed-5bac-3c98-bfd8.ngrok-free.app";
 export const API_URL = `${API_BASE_URL}/api`;
 
 export const API_LOGIN_URL = `${API_URL}/auth/login`;
 export const API_REGISTER_URL = `${API_URL}/auth/register`;
+export const API_SEND_CODE_URL = `${API_URL}/auth/send-reset-code`;
 export const API_RESET_PASSWORD_URL = `${API_URL}/auth/reset-password`;
+
 
 export const API_MENU_URL = `${API_URL}/menu`;
 

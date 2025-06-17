@@ -1,6 +1,9 @@
+// Gunakan polyfill URL & URLSearchParams yang aman untuk React Native (Hermes compatible)
+import 'react-native-url-polyfill/auto';
+
 import React from 'react';
-import { registerRootComponent } from 'expo';
 import { NavigationContainer } from '@react-navigation/native';
+import { registerRootComponent } from 'expo';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
@@ -13,8 +16,5 @@ const App = () => {
     </AuthProvider>
   );
 };
-
-// Mendaftarkan App sebagai komponen root untuk aplikasi Expo
-registerRootComponent(App);
-
+registerRootComponent(App); // ✅ Ini saja cukup di proyek Expo
 export default App;
